@@ -11,6 +11,7 @@
   <modules>
     <module>scalable-ot-core</module>
     <module>scalable-ot-api</module>
+    <module>scalable-ot-consumer</module>
   </modules>
 
   <properties>

@@ -9,7 +9,7 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>scalable-ot-api</artifactId>
+  <artifactId>scalable-ot-consumer</artifactId>
 
   <dependencies>
     <dependency>
@@ -22,6 +22,16 @@
       <optional>true</optional>
     </dependency>
     <dependency>
+      <artifactId>spring-kafka</artifactId>
+      <groupId>org.springframework.kafka</groupId>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.springframework.kafka/spring-kafka-test -->
+    <dependency>
+      <artifactId>spring-kafka-test</artifactId>
+      <groupId>org.springframework.kafka</groupId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <artifactId>mockito-core</artifactId>
       <groupId>org.mockito</groupId>
       <scope>test</scope>
@@ -29,10 +39,6 @@
     <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter -->
     <dependency>
       <artifactId>spring-boot-starter</artifactId>
-      <groupId>org.springframework.boot</groupId>
-    </dependency>
-    <dependency>
-      <artifactId>spring-boot-starter-web</artifactId>
       <groupId>org.springframework.boot</groupId>
     </dependency>
   </dependencies>

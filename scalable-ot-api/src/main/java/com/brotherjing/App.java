@@ -5,11 +5,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 
-import com.brotherjing.config.KafkaConfig;
 import com.brotherjing.config.WebConfig;
 
 @SpringBootApplication
-@Import({ KafkaConfig.class, WebConfig.class })
+@Import({ WebConfig.class })
 @ComponentScan(basePackages = "com.brotherjing")
 public class App {
     public static void main(String[] args) {

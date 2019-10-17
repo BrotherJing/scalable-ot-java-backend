@@ -3,5 +3,3 @@ spring:
     consumer:
       bootstrap-servers: localhost:9092
       value-deserializer: com.brotherjing.serialize.ProtoDeserializer
-server:
-  port: 8080
