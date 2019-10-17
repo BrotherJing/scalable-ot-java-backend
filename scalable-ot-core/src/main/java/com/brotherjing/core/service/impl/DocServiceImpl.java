@@ -33,12 +33,12 @@ public class DocServiceImpl implements DocService {
 
     @Override
     public TextProto.Snapshot get(String docId) {
-        return Converter.toSnapshotProto(docDao.fetch(docId));
+        return docDao.findById(docId).map(Converter::toSnapshotProto).orElse(null);
     }
 
     @Override
     public TextProto.Snapshot apply(String docId, List<TextProto.Command> commands) {
-        SnapshotDto dto = docDao.fetch(docId);
+        SnapshotDto dto = docDao.findById(docId).orElse(null);
         if (dto == null) {
             return null;
         }
