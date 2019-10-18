@@ -28,6 +28,11 @@ public class KafkaConfig {
     }
 
     @Bean
+    public NewTopic revision() {
+        return new NewTopic(Const.TOPIC_REVISION, 3, (short)3);
+    }
+
+    @Bean
     public NewTopic op() {
         return new NewTopic(Const.TOPIC_OP, 3, (short)3);
     }

@@ -12,6 +12,7 @@
     <module>scalable-ot-core</module>
     <module>scalable-ot-api</module>
     <module>scalable-ot-consumer</module>
+    <module>scalable-ot-kafka</module>
   </modules>
 
   <properties>
@@ -38,6 +39,11 @@
       <dependency>
         <groupId>com.brotherjing</groupId>
         <artifactId>scalable-ot-core</artifactId>
+        <version>1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.brotherjing</groupId>
+        <artifactId>scalable-ot-kafka</artifactId>
         <version>1.0-SNAPSHOT</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->

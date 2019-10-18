@@ -14,6 +14,10 @@
   <dependencies>
     <dependency>
       <groupId>com.brotherjing</groupId>
+      <artifactId>scalable-ot-kafka</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.brotherjing</groupId>
       <artifactId>scalable-ot-core</artifactId>
     </dependency>
     <dependency>
