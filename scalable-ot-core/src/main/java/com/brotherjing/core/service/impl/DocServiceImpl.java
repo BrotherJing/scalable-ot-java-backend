@@ -2,11 +2,14 @@ package com.brotherjing.core.service.impl;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.brotherjing.core.dao.CommandDao;
 import com.brotherjing.core.dao.DocDao;
+import com.brotherjing.core.dto.CommandDto;
 import com.brotherjing.core.dto.SnapshotDto;
 import com.brotherjing.core.service.DocService;
 import com.brotherjing.core.util.Converter;
@@ -18,6 +21,9 @@ public class DocServiceImpl implements DocService {
 
     @Autowired
     private DocDao docDao;
+
+    @Autowired
+    private CommandDao commandDao;
 
     @Override
     public TextProto.Snapshot create() {
@@ -34,6 +40,15 @@ public class DocServiceImpl implements DocService {
     @Override
     public TextProto.Snapshot get(String docId) {
         return docDao.findById(docId).map(Converter::toSnapshotProto).orElse(null);
+    }
+
+    @Override
+    public List<TextProto.Command> getOpsSince(String docId, int version) {
+        List<CommandDto> ops = commandDao.getOpsSince(docId, version);
+        if (ops == null || ops.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return ops.stream().map(Converter::toCommandProto).collect(Collectors.toList());
     }
 
     @Override

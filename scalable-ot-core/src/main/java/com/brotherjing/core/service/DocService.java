@@ -10,4 +10,6 @@ public interface DocService {
     TextProto.Snapshot get(String docId);
 
     TextProto.Snapshot apply(String docId, List<TextProto.Command> commands);
+
+    List<TextProto.Command> getOpsSince(String docId, int version);
 }
