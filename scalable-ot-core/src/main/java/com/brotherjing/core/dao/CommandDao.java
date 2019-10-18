@@ -10,6 +10,6 @@ import com.brotherjing.core.dto.CommandDto;
 
 @Repository
 public interface CommandDao extends MongoRepository<CommandDto, String> {
-    @Query("{'docId': ?0, 'version': {$gt: ?1}}")
+    @Query("{'docId': ?0, 'version': {$gte: ?1}}")
     List<CommandDto> getOpsSince(String docId, int version);
 }

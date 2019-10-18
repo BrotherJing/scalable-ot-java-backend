@@ -44,14 +44,15 @@ public class CommandDaoTest {
         putOps("123", 10);
         List<CommandDto> res = mongoOps.find(Query.query(
                 Criteria.where("docId").is("123")
-                        .andOperator(Criteria.where("version").gt(5))), CommandDto.class);
+                        .andOperator(Criteria.where("version").gte(6))), CommandDto.class);
         Assert.assertEquals(5, res.size());
     }
 
+    @Test
     public void loadOpsSinceWithQueryAnnotation() {
         // try with query annotation
         putOps("456", 20);
-        List<CommandDto> res = commandDao.getOpsSince("456", 10);
+        List<CommandDto> res = commandDao.getOpsSince("456", 11);
         Assert.assertEquals(10, res.size());
     }
 
