@@ -7,13 +7,17 @@ import org.springframework.stereotype.Component;
 import com.brotherjing.Const;
 import com.brotherjing.proto.TextProto;
 
+/**
+ * Send user's operations through the op topic,
+ * which will be processed by the OT module sequentially.
+ */
 @Component
-public class OpProducer {
+public class OpSender {
 
     @Autowired
     private KafkaTemplate<String, TextProto.Command> kafkaTemplate;
 
-    public void put(TextProto.Command command) {
-        kafkaTemplate.send(Const.TOPIC_OP, command);
+    public void send(String docId, TextProto.Command command) {
+        kafkaTemplate.send(Const.TOPIC_OP, docId, command);
     }
 }
