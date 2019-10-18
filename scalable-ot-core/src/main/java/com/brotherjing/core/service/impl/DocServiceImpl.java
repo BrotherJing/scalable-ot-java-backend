@@ -84,6 +84,7 @@ public class DocServiceImpl implements DocService {
                 data = data.substring(0, index)
                            .concat(operation.getInsert())
                            .concat(data.substring(index));
+                index += operation.getInsert().length();
                 break;
             case DELETE:
                 int right = Math.min(data.length(), index + operation.getDelete().getDelete());
