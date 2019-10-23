@@ -13,6 +13,7 @@
     <module>scalable-ot-api</module>
     <module>scalable-ot-consumer</module>
     <module>scalable-ot-kafka</module>
+    <module>scalable-ot-broadcast</module>
   </modules>
 
   <properties>
@@ -44,6 +45,11 @@
       <dependency>
         <groupId>com.brotherjing</groupId>
         <artifactId>scalable-ot-kafka</artifactId>
+        <version>1.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.brotherjing</groupId>
+        <artifactId>scalable-ot-broadcast</artifactId>
         <version>1.0-SNAPSHOT</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java -->
@@ -100,6 +106,11 @@
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        <version>${spring-boot.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-websocket</artifactId>
         <version>${spring-boot.version}</version>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-web -->
