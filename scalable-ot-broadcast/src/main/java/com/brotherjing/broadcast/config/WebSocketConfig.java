@@ -15,7 +15,7 @@ import com.brotherjing.broadcast.handler.WebSocketHandler;
 public class WebSocketConfig implements WebSocketConfigurer {
 
     @Autowired
-    WebSocketHandler webSocketHandler;
+    private WebSocketHandler webSocketHandler;
 
     @Bean
     public ServletServerContainerFactoryBean createWebSocketContainer() {

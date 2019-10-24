@@ -25,6 +25,10 @@
       <artifactId>scalable-ot-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>net.devh</groupId>
+      <artifactId>grpc-server-spring-boot-starter</artifactId>
+    </dependency>
+    <dependency>
       <artifactId>spring-boot-configuration-processor</artifactId>
       <groupId>org.springframework.boot</groupId>
       <optional>true</optional>
