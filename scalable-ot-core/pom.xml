@@ -17,6 +17,14 @@
       <artifactId>protobuf-java</artifactId>
     </dependency>
     <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-protobuf</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-stub</artifactId>
+    </dependency>
+    <dependency>
       <artifactId>spring-boot-starter</artifactId>
       <groupId>org.springframework.boot</groupId>
     </dependency>
@@ -47,31 +55,30 @@
   </dependencies>
 
   <build>
+    <extensions>
+      <extension>
+        <groupId>kr.motd.maven</groupId>
+        <artifactId>os-maven-plugin</artifactId>
+        <version>1.6.2</version>
+      </extension>
+    </extensions>
     <plugins>
       <!-- compile proto file into java files. -->
       <plugin>
-        <groupId>com.github.os72</groupId>
-        <artifactId>protoc-jar-maven-plugin</artifactId>
-        <version>3.8.0</version>
+        <groupId>org.xolstice.maven.plugins</groupId>
+        <artifactId>protobuf-maven-plugin</artifactId>
+        <version>0.6.1</version>
+        <configuration>
+          <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
+          <pluginId>grpc-java</pluginId>
+          <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.24.0:exe:${os.detected.classifier}</pluginArtifact>
+        </configuration>
         <executions>
           <execution>
-            <phase>generate-sources</phase>
             <goals>
-              <goal>run</goal>
+              <goal>compile</goal>
+              <goal>compile-custom</goal>
             </goals>
-            <configuration>
-              <protocVersion>${protobuf.version}</protocVersion>
-              <inputDirectories>
-                <include>src/main/proto</include>
-              </inputDirectories>
-              <!-- Create java files. And put them in the src/main/java directory. -->
-              <outputTargets>
-                <outputTarget>
-                  <type>java</type>
-                  <outputDirectory>src/main/java</outputDirectory>
-                </outputTarget>
-              </outputTargets>
-            </configuration>
           </execution>
         </executions>
       </plugin>
