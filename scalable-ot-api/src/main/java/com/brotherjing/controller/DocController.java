@@ -34,7 +34,11 @@ public class DocController {
     }
 
     @GetMapping(value = "/{docId}/fetch")
-    TextProto.Snapshot fetch(@PathVariable String docId) {
+    TextProto.Snapshot fetch(@PathVariable String docId,
+            @RequestParam(value = "version", required = false) Integer version) {
+        if (version != null) {
+            return docService.getSnapshotAt(docId, version);
+        }
         return docService.get(docId);
     }
 

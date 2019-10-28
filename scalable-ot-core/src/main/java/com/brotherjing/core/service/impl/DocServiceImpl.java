@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.brotherjing.core.dao.CommandDao;
@@ -13,8 +14,10 @@ import com.brotherjing.core.dto.CommandDto;
 import com.brotherjing.core.dto.SnapshotDto;
 import com.brotherjing.core.service.DocService;
 import com.brotherjing.core.util.Converter;
+import com.brotherjing.core.util.IDUtils;
 import com.brotherjing.core.util.ShortUUID;
 import com.brotherjing.proto.TextProto;
+import com.google.common.collect.Lists;
 
 @Service
 public class DocServiceImpl implements DocService {
@@ -29,17 +32,26 @@ public class DocServiceImpl implements DocService {
     public TextProto.Snapshot create() {
         String docId = ShortUUID.generate();
         SnapshotDto dto = SnapshotDto.builder()
+                                     .id(IDUtils.generateSnapshotPK(docId))
                                      .docId(docId)
                                      .data("")
                                      .version(0)
                                      .build();
-        docDao.save(dto);
+        // also create initial snapshot
+        SnapshotDto initSnapshot = SnapshotDto.builder()
+                                              .id(IDUtils.generateSnapshotPK(docId, 0))
+                                              .docId(docId)
+                                              .data("")
+                                              .version(0)
+                                              .build();
+        docDao.saveAll(Lists.newArrayList(dto, initSnapshot));
         return Converter.toSnapshotProto(dto);
     }
 
     @Override
     public TextProto.Snapshot get(String docId) {
-        return docDao.findById(docId).map(Converter::toSnapshotProto).orElse(null);
+        return docDao.findById(IDUtils.generateSnapshotPK(docId))
+                     .map(Converter::toSnapshotProto).orElse(null);
     }
 
     @Override
@@ -52,17 +64,49 @@ public class DocServiceImpl implements DocService {
     }
 
     @Override
+    public List<TextProto.Command> getOpsBetween(String docId, int from, int to) {
+        List<CommandDto> ops = commandDao.getOpsBetween(docId, from, to);
+        if (ops == null || ops.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return ops.stream().map(Converter::toCommandProto).collect(Collectors.toList());
+    }
+
+    @Override
+    public TextProto.Snapshot getSnapshotAt(String docId, int version) {
+        List<SnapshotDto> snapshots = docDao.getNearestSnapshot(docId, version, PageRequest.of(0, 1));
+        if (snapshots == null || snapshots.isEmpty()) {
+            return null;
+        }
+        SnapshotDto snapshot = snapshots.get(0);
+        if (snapshot.getVersion() == version) {
+            // version is equal, return directly
+            return Converter.toSnapshotProto(snapshot);
+        }
+        List<TextProto.Command> ops = getOpsBetween(docId, snapshot.getVersion(), version);
+        apply(snapshot, ops);
+        return Converter.toSnapshotProto(snapshot);
+    }
+
+    @Override
     public TextProto.Snapshot apply(String docId, List<TextProto.Command> commands) {
-        SnapshotDto dto = docDao.findById(docId).orElse(null);
+        SnapshotDto dto = docDao.findById(IDUtils.generateSnapshotPK(docId)).orElse(null);
         if (dto == null) {
             return null;
+        }
+        apply(dto, commands);
+        docDao.save(dto);
+        return Converter.toSnapshotProto(dto);
+    }
+
+    private void apply(SnapshotDto dto, List<TextProto.Command> commands) {
+        if (commands == null) {
+            return;
         }
         for (TextProto.Command command : commands) {
             applySingle(dto, command);
             dto.setVersion(dto.getVersion() + 1);
         }
-        docDao.save(dto);
-        return Converter.toSnapshotProto(dto);
     }
 
     private void applySingle(SnapshotDto dto, TextProto.Command command) {

@@ -12,4 +12,13 @@ import com.brotherjing.core.dto.CommandDto;
 public interface CommandDao extends MongoRepository<CommandDto, String> {
     @Query("{'docId': ?0, 'version': {$gte: ?1}}")
     List<CommandDto> getOpsSince(String docId, int version);
+
+    /**
+     * @param docId doc id
+     * @param from  inclusive
+     * @param to    exclusive
+     * @return operations between from and to
+     */
+    @Query("{'docId': ?0, 'version': {$gte: ?1, $lt: ?2}}")
+    List<CommandDto> getOpsBetween(String docId, int from, int to);
 }

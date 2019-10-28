@@ -12,4 +12,8 @@ public interface DocService {
     TextProto.Snapshot apply(String docId, List<TextProto.Command> commands);
 
     List<TextProto.Command> getOpsSince(String docId, int version);
+
+    List<TextProto.Command> getOpsBetween(String docId, int from, int to);
+
+    TextProto.Snapshot getSnapshotAt(String docId, int version);
 }
