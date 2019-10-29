@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import com.brotherjing.Const;
 import com.brotherjing.core.dao.CommandDao;
 import com.brotherjing.core.dao.DocDao;
 import com.brotherjing.core.dto.CommandDto;
@@ -17,6 +18,7 @@ import com.brotherjing.core.util.Converter;
 import com.brotherjing.core.util.IDUtils;
 import com.brotherjing.core.util.ShortUUID;
 import com.brotherjing.proto.TextProto;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 
 @Service
@@ -72,13 +74,21 @@ public class DocServiceImpl implements DocService {
         return ops.stream().map(Converter::toCommandProto).collect(Collectors.toList());
     }
 
-    @Override
-    public TextProto.Snapshot getSnapshotAt(String docId, int version) {
+    @VisibleForTesting
+    protected SnapshotDto getNearestSnapshot(String docId, int version) {
         List<SnapshotDto> snapshots = docDao.getNearestSnapshot(docId, version, PageRequest.of(0, 1));
         if (snapshots == null || snapshots.isEmpty()) {
             return null;
         }
-        SnapshotDto snapshot = snapshots.get(0);
+        return snapshots.get(0);
+    }
+
+    @Override
+    public TextProto.Snapshot getSnapshotAt(String docId, int version) {
+        SnapshotDto snapshot = getNearestSnapshot(docId, version);
+        if (snapshot == null) {
+            return null;
+        }
         if (snapshot.getVersion() == version) {
             // version is equal, return directly
             return Converter.toSnapshotProto(snapshot);
@@ -94,8 +104,12 @@ public class DocServiceImpl implements DocService {
         if (dto == null) {
             return null;
         }
+        int versionBeforeApply = dto.getVersion();
+
         apply(dto, commands);
         docDao.save(dto);
+
+        tryTakeSnapshot(dto, versionBeforeApply);
         return Converter.toSnapshotProto(dto);
     }
 
@@ -139,5 +153,19 @@ public class DocServiceImpl implements DocService {
             }
         }
         dto.setData(data);
+    }
+
+    /**
+     * Try take snapshot at certain intervals
+     *
+     * @param dto        the latest document dto
+     * @param oldVersion version to compare
+     */
+    private void tryTakeSnapshot(SnapshotDto dto, int oldVersion) {
+        // if the version pass another checkpoint
+        if (dto.getVersion() / Const.TAKE_SNAPSHOT_INTERVAL > oldVersion / Const.TAKE_SNAPSHOT_INTERVAL) {
+            dto.setId(IDUtils.generateSnapshotPK(dto.getDocId(), dto.getVersion()));
+            docDao.save(dto);
+        }
     }
 }
