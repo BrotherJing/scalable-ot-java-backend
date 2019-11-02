@@ -2,18 +2,18 @@ package com.brotherjing.core.service;
 
 import java.util.List;
 
-import com.brotherjing.proto.TextProto;
+import com.brotherjing.proto.BaseProto;
 
 public interface DocService {
-    TextProto.Snapshot create();
+    BaseProto.Snapshot create();
 
-    TextProto.Snapshot get(String docId);
+    BaseProto.Snapshot get(String docId);
 
-    TextProto.Snapshot apply(String docId, List<TextProto.Command> commands);
+    BaseProto.Snapshot apply(String docId, List<BaseProto.Command> commands);
 
-    List<TextProto.Command> getOpsSince(String docId, int version);
+    List<BaseProto.Command> getOpsSince(String docId, int version);
 
-    List<TextProto.Command> getOpsBetween(String docId, int from, int to);
+    List<BaseProto.Command> getOpsBetween(String docId, int from, int to);
 
-    TextProto.Snapshot getSnapshotAt(String docId, int version);
+    BaseProto.Snapshot getSnapshotAt(String docId, int version);
 }

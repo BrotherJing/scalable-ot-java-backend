@@ -14,7 +14,6 @@
     <module>scalable-ot-consumer</module>
     <module>scalable-ot-kafka</module>
     <module>scalable-ot-broadcast</module>
-    <module>grpc-demo</module>
   </modules>
 
   <properties>

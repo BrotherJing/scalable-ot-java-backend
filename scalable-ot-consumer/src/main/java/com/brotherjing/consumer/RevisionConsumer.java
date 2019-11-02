@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.brotherjing.Const;
 import com.brotherjing.core.service.DocService;
-import com.brotherjing.proto.TextProto.Command;
+import com.brotherjing.proto.BaseProto.Command;
 
 
 /**

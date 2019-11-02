@@ -4,16 +4,16 @@ import java.util.Map;
 
 import org.apache.kafka.common.serialization.Serializer;
 
-import com.brotherjing.proto.TextProto;
+import com.brotherjing.proto.BaseProto;
 
-public class ProtoSerializer implements Serializer<TextProto.Command> {
+public class ProtoSerializer implements Serializer<BaseProto.Command> {
     @Override
     public void configure(Map<String, ?> map, boolean b) {
 
     }
 
     @Override
-    public byte[] serialize(String s, TextProto.Command command) {
+    public byte[] serialize(String s, BaseProto.Command command) {
         return command.toByteArray();
     }
 

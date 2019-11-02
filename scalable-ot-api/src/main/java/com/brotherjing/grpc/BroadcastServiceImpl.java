@@ -6,8 +6,8 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.brotherjing.broadcast.handler.WebSocketHandler;
+import com.brotherjing.proto.BaseProto;
 import com.brotherjing.proto.BroadcastServiceGrpc;
-import com.brotherjing.proto.TextProto;
 
 @GrpcService
 public class BroadcastServiceImpl extends BroadcastServiceGrpc.BroadcastServiceImplBase {
@@ -16,17 +16,17 @@ public class BroadcastServiceImpl extends BroadcastServiceGrpc.BroadcastServiceI
     private WebSocketHandler broadcast;
 
     @Override
-    public void sendTo(TextProto.SendRequest request, StreamObserver<TextProto.BroadcastResponse> responseObserver) {
+    public void sendTo(BaseProto.SendRequest request, StreamObserver<BaseProto.BroadcastResponse> responseObserver) {
         broadcast.sendTo(request.getSid(), request.getCommandList());
-        responseObserver.onNext(TextProto.BroadcastResponse.newBuilder().build());
+        responseObserver.onNext(BaseProto.BroadcastResponse.newBuilder().build());
         responseObserver.onCompleted();
     }
 
     @Override
-    public void sendToAll(TextProto.BroadcastRequest request,
-            StreamObserver<TextProto.BroadcastResponse> responseObserver) {
+    public void sendToAll(BaseProto.BroadcastRequest request,
+            StreamObserver<BaseProto.BroadcastResponse> responseObserver) {
         broadcast.sendToAll(request.getCommandList(), request.getExcludeSelf());
-        responseObserver.onNext(TextProto.BroadcastResponse.newBuilder().build());
+        responseObserver.onNext(BaseProto.BroadcastResponse.newBuilder().build());
         responseObserver.onCompleted();
     }
 }

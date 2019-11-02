@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -17,10 +19,13 @@ import com.brotherjing.core.service.DocService;
 import com.brotherjing.core.util.Converter;
 import com.brotherjing.core.util.IDUtils;
 import com.brotherjing.core.util.ShortUUID;
+import com.brotherjing.proto.BaseProto;
 import com.brotherjing.proto.TextProto;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.google.protobuf.InvalidProtocolBufferException;
 
+@Slf4j
 @Service
 public class DocServiceImpl implements DocService {
 
@@ -31,7 +36,7 @@ public class DocServiceImpl implements DocService {
     private CommandDao commandDao;
 
     @Override
-    public TextProto.Snapshot create() {
+    public BaseProto.Snapshot create() {
         String docId = ShortUUID.generate();
         SnapshotDto dto = SnapshotDto.builder()
                                      .id(IDUtils.generateSnapshotPK(docId))
@@ -51,13 +56,13 @@ public class DocServiceImpl implements DocService {
     }
 
     @Override
-    public TextProto.Snapshot get(String docId) {
+    public BaseProto.Snapshot get(String docId) {
         return docDao.findById(IDUtils.generateSnapshotPK(docId))
                      .map(Converter::toSnapshotProto).orElse(null);
     }
 
     @Override
-    public List<TextProto.Command> getOpsSince(String docId, int version) {
+    public List<BaseProto.Command> getOpsSince(String docId, int version) {
         List<CommandDto> ops = commandDao.getOpsSince(docId, version);
         if (ops == null || ops.isEmpty()) {
             return Collections.emptyList();
@@ -66,7 +71,7 @@ public class DocServiceImpl implements DocService {
     }
 
     @Override
-    public List<TextProto.Command> getOpsBetween(String docId, int from, int to) {
+    public List<BaseProto.Command> getOpsBetween(String docId, int from, int to) {
         List<CommandDto> ops = commandDao.getOpsBetween(docId, from, to);
         if (ops == null || ops.isEmpty()) {
             return Collections.emptyList();
@@ -84,7 +89,7 @@ public class DocServiceImpl implements DocService {
     }
 
     @Override
-    public TextProto.Snapshot getSnapshotAt(String docId, int version) {
+    public BaseProto.Snapshot getSnapshotAt(String docId, int version) {
         SnapshotDto snapshot = getNearestSnapshot(docId, version);
         if (snapshot == null) {
             return null;
@@ -93,13 +98,13 @@ public class DocServiceImpl implements DocService {
             // version is equal, return directly
             return Converter.toSnapshotProto(snapshot);
         }
-        List<TextProto.Command> ops = getOpsBetween(docId, snapshot.getVersion(), version);
+        List<BaseProto.Command> ops = getOpsBetween(docId, snapshot.getVersion(), version);
         apply(snapshot, ops);
         return Converter.toSnapshotProto(snapshot);
     }
 
     @Override
-    public TextProto.Snapshot apply(String docId, List<TextProto.Command> commands) {
+    public BaseProto.Snapshot apply(String docId, List<BaseProto.Command> commands) {
         SnapshotDto dto = docDao.findById(IDUtils.generateSnapshotPK(docId)).orElse(null);
         if (dto == null) {
             return null;
@@ -113,19 +118,32 @@ public class DocServiceImpl implements DocService {
         return Converter.toSnapshotProto(dto);
     }
 
-    private void apply(SnapshotDto dto, List<TextProto.Command> commands) {
+    private void apply(SnapshotDto dto, List<BaseProto.Command> commands) {
         if (commands == null) {
             return;
         }
-        for (TextProto.Command command : commands) {
+        for (BaseProto.Command command : commands) {
             applySingle(dto, command);
             dto.setVersion(dto.getVersion() + 1);
         }
     }
 
-    private void applySingle(SnapshotDto dto, TextProto.Command command) {
+    private void applySingle(SnapshotDto dto, BaseProto.Command command) {
+        if (BaseProto.DocType.PLAIN_TEXT.equals(command.getType())) {
+            log.info("command type is {}", command.getOp().getTypeUrl());
+            try {
+                if (command.getOp().is(TextProto.Operation.class)) {
+                    TextProto.Operation op = command.getOp().unpack(TextProto.Operation.class);
+                    applyTextOp(dto, op);
+                }
+            } catch (InvalidProtocolBufferException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void applyTextOp(SnapshotDto dto, TextProto.Operation op) {
         List<TextProto.Operation> operations;
-        TextProto.Operation op = command.getOp();
         if (op.hasMultiple()) {
             operations = op.getMultiple().getOpsList();
         } else {

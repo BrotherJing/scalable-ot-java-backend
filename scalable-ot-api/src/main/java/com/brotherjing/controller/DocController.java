@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.brotherjing.core.service.DocService;
 import com.brotherjing.producer.OpSender;
-import com.brotherjing.proto.TextProto;
+import com.brotherjing.proto.BaseProto;
 
 @RestController
 @RequestMapping(path = "/doc")
@@ -29,12 +29,12 @@ public class DocController {
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @ResponseBody
-    TextProto.Snapshot create() {
+    BaseProto.Snapshot create() {
         return docService.create();
     }
 
     @GetMapping(value = "/{docId}/fetch")
-    TextProto.Snapshot fetch(@PathVariable String docId,
+    BaseProto.Snapshot fetch(@PathVariable String docId,
             @RequestParam(value = "version", required = false) Integer version) {
         if (version != null) {
             return docService.getSnapshotAt(docId, version);
@@ -43,15 +43,15 @@ public class DocController {
     }
 
     @GetMapping(value = "/{docId}/ops")
-    TextProto.Commands getOps(@PathVariable String docId, @RequestParam("from") int fromVersion) {
-        List<TextProto.Command> commands = docService.getOpsSince(docId, fromVersion);
-        return TextProto.Commands.newBuilder()
+    BaseProto.Commands getOps(@PathVariable String docId, @RequestParam("from") int fromVersion) {
+        List<BaseProto.Command> commands = docService.getOpsSince(docId, fromVersion);
+        return BaseProto.Commands.newBuilder()
                                  .addAllCommands(commands)
                                  .build();
     }
 
     @PostMapping(value = "/{docId}/save", consumes = "application/x-protobuf")
-    void save(@PathVariable String docId, @RequestBody TextProto.Command command) {
+    void save(@PathVariable String docId, @RequestBody BaseProto.Command command) {
         opSender.send(docId, command);
     }
 }

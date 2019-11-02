@@ -5,7 +5,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import com.brotherjing.Const;
-import com.brotherjing.proto.TextProto;
+import com.brotherjing.proto.BaseProto;
 
 /**
  * Send user's operations through the op topic,
@@ -15,9 +15,9 @@ import com.brotherjing.proto.TextProto;
 public class OpSender {
 
     @Autowired
-    private KafkaTemplate<String, TextProto.Command> kafkaTemplate;
+    private KafkaTemplate<String, BaseProto.Command> kafkaTemplate;
 
-    public void send(String docId, TextProto.Command command) {
+    public void send(String docId, BaseProto.Command command) {
         kafkaTemplate.send(Const.TOPIC_OP, docId, command);
     }
 }

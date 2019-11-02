@@ -15,7 +15,7 @@ import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
-import com.brotherjing.proto.TextProto;
+import com.brotherjing.proto.BaseProto;
 
 @Slf4j
 @Component
@@ -25,7 +25,7 @@ public class WebSocketHandler extends BinaryWebSocketHandler {
 
     @Override
     protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
-        TextProto.Command command = TextProto.Command.parseFrom(message.getPayload().array());
+        BaseProto.Command command = BaseProto.Command.parseFrom(message.getPayload().array());
         if (command.getInit()) {
             register(command.getDocId(), command.getSid(), session);
         } else {
@@ -33,7 +33,7 @@ public class WebSocketHandler extends BinaryWebSocketHandler {
         }
     }
 
-    public void sendToAll(List<TextProto.Command> commands, boolean excludeSelf) {
+    public void sendToAll(List<BaseProto.Command> commands, boolean excludeSelf) {
         if (CollectionUtils.isEmpty(commands)) {
             return;
         }
@@ -52,7 +52,7 @@ public class WebSocketHandler extends BinaryWebSocketHandler {
                 continue;
             }
             try {
-                for (TextProto.Command command : commands) {
+                for (BaseProto.Command command : commands) {
                     client.sendMessage(new BinaryMessage(command.toByteArray()));
                 }
             } catch (IOException e) {
@@ -65,11 +65,11 @@ public class WebSocketHandler extends BinaryWebSocketHandler {
         }
     }
 
-    public void sendToAll(TextProto.Command command, boolean excludeSelf) {
+    public void sendToAll(BaseProto.Command command, boolean excludeSelf) {
         sendToAll(Collections.singletonList(command), excludeSelf);
     }
 
-    public void sendTo(String sid, List<TextProto.Command> commands) {
+    public void sendTo(String sid, List<BaseProto.Command> commands) {
         if (CollectionUtils.isEmpty(commands)) {
             return;
         }
@@ -79,7 +79,7 @@ public class WebSocketHandler extends BinaryWebSocketHandler {
             return;
         }
         try {
-            for (TextProto.Command command : commands) {
+            for (BaseProto.Command command : commands) {
                 client.sendMessage(new BinaryMessage(command.toByteArray()));
             }
         } catch (IOException e) {

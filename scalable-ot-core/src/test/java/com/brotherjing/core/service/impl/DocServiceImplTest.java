@@ -18,7 +18,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.brotherjing.Const;
 import com.brotherjing.config.MongoConfig;
 import com.brotherjing.core.dto.SnapshotDto;
-import com.brotherjing.proto.TextProto;
+import com.brotherjing.proto.BaseProto;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = MongoConfig.class)
@@ -45,11 +45,11 @@ public class DocServiceImplTest {
 
     @Test
     public void testTakeSnapshot() {
-        TextProto.Snapshot doc = docService.create();
+        BaseProto.Snapshot doc = docService.create();
         String docId = doc.getDocId();
         int toVersion = Const.TAKE_SNAPSHOT_INTERVAL + 1;
-        List<TextProto.Command> commands = IntStream.range(0, toVersion)
-                                                    .mapToObj(i -> TextProto.Command.newBuilder()
+        List<BaseProto.Command> commands = IntStream.range(0, toVersion)
+                                                    .mapToObj(i -> BaseProto.Command.newBuilder()
                                                                                     .setVersion(i)
                                                                                     .build())
                                                     .collect(Collectors.toList());
