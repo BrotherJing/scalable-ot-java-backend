@@ -15,19 +15,22 @@ import com.brotherjing.core.dao.CommandDao;
 import com.brotherjing.core.dao.DocDao;
 import com.brotherjing.core.dto.CommandDto;
 import com.brotherjing.core.dto.SnapshotDto;
+import com.brotherjing.core.executor.CommandExecutorRegistry;
+import com.brotherjing.core.executor.ICommandExecutor;
 import com.brotherjing.core.service.DocService;
 import com.brotherjing.core.util.Converter;
 import com.brotherjing.core.util.IDUtils;
 import com.brotherjing.core.util.ShortUUID;
 import com.brotherjing.proto.BaseProto;
-import com.brotherjing.proto.TextProto;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 @Slf4j
 @Service
 public class DocServiceImpl implements DocService {
+
+    @Autowired
+    private CommandExecutorRegistry registry;
 
     @Autowired
     private DocDao docDao;
@@ -119,58 +122,18 @@ public class DocServiceImpl implements DocService {
     }
 
     private void apply(SnapshotDto dto, List<BaseProto.Command> commands) {
-        if (commands == null) {
+        if (commands == null || commands.isEmpty()) {
+            return;
+        }
+        ICommandExecutor executor = registry.getCommandExecutor(commands.get(0).getType());
+        if (executor == null) {
+            log.error("Cannot find executor for this command type: {}", commands.get(0).getType().name());
             return;
         }
         for (BaseProto.Command command : commands) {
-            applySingle(dto, command);
+            executor.applySingle(dto, command);
             dto.setVersion(dto.getVersion() + 1);
         }
-    }
-
-    private void applySingle(SnapshotDto dto, BaseProto.Command command) {
-        if (BaseProto.DocType.PLAIN_TEXT.equals(command.getType())) {
-            log.info("command type is {}", command.getOp().getTypeUrl());
-            try {
-                if (command.getOp().is(TextProto.Operation.class)) {
-                    TextProto.Operation op = command.getOp().unpack(TextProto.Operation.class);
-                    applyTextOp(dto, op);
-                }
-            } catch (InvalidProtocolBufferException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void applyTextOp(SnapshotDto dto, TextProto.Operation op) {
-        List<TextProto.Operation> operations;
-        if (op.hasMultiple()) {
-            operations = op.getMultiple().getOpsList();
-        } else {
-            operations = Collections.singletonList(op);
-        }
-        String data = dto.getData();
-        int index = 0;
-        for (TextProto.Operation operation : operations) {
-            switch (operation.getType()) {
-            case RETAIN:
-                index += operation.getRetain();
-                break;
-            case INSERT:
-                data = data.substring(0, index)
-                           .concat(operation.getInsert())
-                           .concat(data.substring(index));
-                index += operation.getInsert().length();
-                break;
-            case DELETE:
-                int right = Math.min(data.length(), index + operation.getDelete().getDelete());
-                data = data.substring(0, index).concat(data.substring(right));
-                break;
-            default:
-                break;
-            }
-        }
-        dto.setData(data);
     }
 
     /**
