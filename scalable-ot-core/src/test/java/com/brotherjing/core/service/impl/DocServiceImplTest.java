@@ -18,11 +18,13 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.brotherjing.Const;
 import com.brotherjing.config.MongoConfig;
 import com.brotherjing.core.dto.SnapshotDto;
+import com.brotherjing.core.executor.CommandExecutorRegistry;
+import com.brotherjing.core.executor.impl.TextCommandExecutor;
 import com.brotherjing.proto.BaseProto;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = MongoConfig.class)
-@Import(DocServiceImpl.class)
+@Import({ DocServiceImpl.class, CommandExecutorRegistry.class, TextCommandExecutor.class })
 public class DocServiceImplTest {
 
     @Autowired
@@ -44,8 +46,14 @@ public class DocServiceImplTest {
     }
 
     @Test
+    public void testGetInitialData() {
+        String data = docService.getInitialData(BaseProto.DocType.JSON);
+        Assert.assertNotNull(data);
+    }
+
+    @Test
     public void testTakeSnapshot() {
-        BaseProto.Snapshot doc = docService.create();
+        BaseProto.Snapshot doc = docService.create(BaseProto.DocType.PLAIN_TEXT);
         String docId = doc.getDocId();
         int toVersion = Const.TAKE_SNAPSHOT_INTERVAL + 1;
         List<BaseProto.Command> commands = IntStream.range(0, toVersion)

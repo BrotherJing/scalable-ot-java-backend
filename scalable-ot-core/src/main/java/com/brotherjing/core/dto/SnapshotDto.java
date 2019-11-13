@@ -13,11 +13,21 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Data
 @Document
 @CompoundIndex(def = "{'docId': 1, 'version': 1}")
-public class SnapshotDto implements Serializable {
+public class SnapshotDto implements Serializable, Cloneable {
     @Id
     String id;
 
     String docId;
     String data;
     int version;
+
+    @Override
+    public SnapshotDto clone() {
+        return new SnapshotDtoBuilder()
+                .id(id)
+                .docId(docId)
+                .data(data)
+                .version(version)
+                .build();
+    }
 }

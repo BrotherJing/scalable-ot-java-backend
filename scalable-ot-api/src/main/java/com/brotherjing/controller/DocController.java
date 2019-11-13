@@ -30,7 +30,13 @@ public class DocController {
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @ResponseBody
     BaseProto.Snapshot create() {
-        return docService.create();
+        return docService.create(BaseProto.DocType.PLAIN_TEXT);
+    }
+
+    @RequestMapping(value = "/create/sheet", method = RequestMethod.POST)
+    @ResponseBody
+    BaseProto.Snapshot createSheet() {
+        return docService.create(BaseProto.DocType.JSON);
     }
 
     @GetMapping(value = "/{docId}/fetch")

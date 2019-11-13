@@ -1,5 +1,6 @@
 package com.brotherjing.core.service.impl;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +23,8 @@ import com.brotherjing.core.util.Converter;
 import com.brotherjing.core.util.IDUtils;
 import com.brotherjing.core.util.ShortUUID;
 import com.brotherjing.proto.BaseProto;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 
@@ -39,23 +42,35 @@ public class DocServiceImpl implements DocService {
     private CommandDao commandDao;
 
     @Override
-    public BaseProto.Snapshot create() {
+    public BaseProto.Snapshot create(BaseProto.DocType docType) {
         String docId = ShortUUID.generate();
         SnapshotDto dto = SnapshotDto.builder()
                                      .id(IDUtils.generateSnapshotPK(docId))
                                      .docId(docId)
-                                     .data("")
+                                     .data(getInitialData(docType))
                                      .version(0)
                                      .build();
         // also create initial snapshot
-        SnapshotDto initSnapshot = SnapshotDto.builder()
-                                              .id(IDUtils.generateSnapshotPK(docId, 0))
-                                              .docId(docId)
-                                              .data("")
-                                              .version(0)
-                                              .build();
+        SnapshotDto initSnapshot = dto.clone();
+        initSnapshot.setId(IDUtils.generateSnapshotPK(docId, 0));
         docDao.saveAll(Lists.newArrayList(dto, initSnapshot));
         return Converter.toSnapshotProto(dto);
+    }
+
+    @VisibleForTesting
+    String getInitialData(BaseProto.DocType docType) {
+        if (BaseProto.DocType.JSON.equals(docType)) {
+            String[][] data = new String[10][10];
+            for (String[] row : data) {
+                Arrays.fill(row, "");
+            }
+            try {
+                return new ObjectMapper().writeValueAsString(data);
+            } catch (JsonProcessingException e) {
+                return "{}";
+            }
+        }
+        return "";
     }
 
     @Override

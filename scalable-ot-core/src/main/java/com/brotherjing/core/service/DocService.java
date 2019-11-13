@@ -5,7 +5,7 @@ import java.util.List;
 import com.brotherjing.proto.BaseProto;
 
 public interface DocService {
-    BaseProto.Snapshot create();
+    BaseProto.Snapshot create(BaseProto.DocType docType);
 
     BaseProto.Snapshot get(String docId);
 
