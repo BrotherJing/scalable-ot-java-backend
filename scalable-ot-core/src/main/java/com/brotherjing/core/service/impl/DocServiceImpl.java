@@ -18,6 +18,7 @@ import com.brotherjing.core.dto.CommandDto;
 import com.brotherjing.core.dto.SnapshotDto;
 import com.brotherjing.core.executor.CommandExecutorRegistry;
 import com.brotherjing.core.executor.ICommandExecutor;
+import com.brotherjing.core.model.exception.CommandException;
 import com.brotherjing.core.service.DocService;
 import com.brotherjing.core.util.Converter;
 import com.brotherjing.core.util.IDUtils;
@@ -145,9 +146,12 @@ public class DocServiceImpl implements DocService {
             log.error("Cannot find executor for this command type: {}", commands.get(0).getType().name());
             return;
         }
-        for (BaseProto.Command command : commands) {
-            executor.applySingle(dto, command);
-            dto.setVersion(dto.getVersion() + 1);
+        int version = dto.getVersion();
+        try {
+            executor.apply(dto, commands);
+            dto.setVersion(version + commands.size());
+        } catch (CommandException e) {
+            e.printStackTrace();
         }
     }
 

@@ -7,15 +7,13 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Component;
 
-import com.brotherjing.core.dto.SnapshotDto;
-import com.brotherjing.core.executor.ICommandExecutor;
+import com.brotherjing.core.executor.AbstractCommandExecutor;
 import com.brotherjing.proto.BaseProto;
 import com.brotherjing.proto.TextProto;
-import com.google.protobuf.InvalidProtocolBufferException;
 
 @Slf4j
 @Component
-public class TextCommandExecutor implements ICommandExecutor {
+public class TextCommandExecutor extends AbstractCommandExecutor<TextProto.Operation, String> {
 
     @Override
     public BaseProto.DocType getSupportedType() {
@@ -23,26 +21,28 @@ public class TextCommandExecutor implements ICommandExecutor {
     }
 
     @Override
-    public void applySingle(SnapshotDto dto, BaseProto.Command command) {
-        log.info("command type is {}", command.getOp().getTypeUrl());
-        try {
-            if (command.getOp().is(TextProto.Operation.class)) {
-                TextProto.Operation op = command.getOp().unpack(TextProto.Operation.class);
-                applyTextOp(dto, op);
-            }
-        } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
-        }
+    protected Class<TextProto.Operation> getOpClass() {
+        return TextProto.Operation.class;
     }
 
-    private void applyTextOp(SnapshotDto dto, TextProto.Operation op) {
+    @Override
+    protected String deserialize(String data) {
+        return data;
+    }
+
+    @Override
+    protected String serialize(String data) {
+        return data;
+    }
+
+    @Override
+    protected String applyOp(String data, TextProto.Operation op) {
         List<TextProto.Operation> operations;
         if (op.hasMultiple()) {
             operations = op.getMultiple().getOpsList();
         } else {
             operations = Collections.singletonList(op);
         }
-        String data = dto.getData();
         int index = 0;
         for (TextProto.Operation operation : operations) {
             switch (operation.getType()) {
@@ -63,6 +63,6 @@ public class TextCommandExecutor implements ICommandExecutor {
                 break;
             }
         }
-        dto.setData(data);
+        return data;
     }
 }
