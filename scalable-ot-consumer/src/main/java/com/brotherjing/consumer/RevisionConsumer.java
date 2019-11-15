@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.annotation.TopicPartition;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -30,7 +29,7 @@ public class RevisionConsumer {
     @Autowired
     private DocService docService;
 
-    @KafkaListener(topicPartitions = @TopicPartition(topic = Const.TOPIC_REVISION, partitions = { "0", "1", "2" }))
+    @KafkaListener(topics = { Const.TOPIC_REVISION }, groupId = Const.REVISION_CONSUMER_GROUP_ID)
     public void consume(@Payload Command command,
             @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition) throws IOException {
         log.info("received {} from partition {}", command, partition);
