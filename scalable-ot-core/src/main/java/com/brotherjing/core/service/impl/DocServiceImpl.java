@@ -147,6 +147,10 @@ public class DocServiceImpl implements DocService {
             return;
         }
         int version = dto.getVersion();
+        // this achieve idempotent by removing duplicated commands
+        commands = commands.stream()
+                           .filter(command -> command.getVersion() >= version)
+                           .collect(Collectors.toList());
         try {
             executor.apply(dto, commands);
             dto.setVersion(version + commands.size());
