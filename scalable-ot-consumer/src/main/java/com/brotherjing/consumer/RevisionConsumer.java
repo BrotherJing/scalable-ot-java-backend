@@ -1,12 +1,12 @@
 package com.brotherjing.consumer;
 
-import java.io.IOException;
 import java.util.Collections;
 
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -31,11 +31,13 @@ public class RevisionConsumer {
 
     @KafkaListener(topics = { Const.TOPIC_REVISION }, groupId = Const.REVISION_CONSUMER_GROUP_ID)
     public void consume(@Payload Command command,
-            @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition) throws IOException {
-        log.info("received {} from partition {}", command, partition);
-        if (command == null) {
-            return;
-        }
+            @Header(KafkaHeaders.RECEIVED_PARTITION_ID) int partition,
+            @Header(KafkaHeaders.OFFSET) int offset,
+            Acknowledgment acknowledgment) {
+        log.info("received {} from partition {}, offset = {}", command, partition, offset);
         docService.apply(command.getDocId(), Collections.singletonList(command));
+
+        // manually send ack after execution to avoid lost message.
+        acknowledgment.acknowledge();
     }
 }
