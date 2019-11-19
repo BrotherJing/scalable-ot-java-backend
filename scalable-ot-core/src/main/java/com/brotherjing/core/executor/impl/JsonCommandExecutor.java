@@ -46,8 +46,9 @@ public class JsonCommandExecutor extends AbstractCommandExecutor<JsonProto.Opera
 
     @Override
     protected JsonNode applyOp(JsonNode data, JsonProto.Operations op) {
-        JsonNode pointer = data;
+        JsonNode pointer;
         for (JsonProto.Operation operation : op.getOpsList()) {
+            pointer = data;
             List<JsonProto.Path> pathList = operation.getPathList();
             for (JsonProto.Path path : pathList.subList(0, pathList.size() - 1)) {
                 if (path.getTypeCase().equals(JsonProto.Path.TypeCase.INDEX)) {
