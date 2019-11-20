@@ -13,6 +13,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 import com.brotherjing.Const;
+import com.brotherjing.core.model.exception.CommandException;
 import com.brotherjing.core.service.DocService;
 import com.brotherjing.proto.BaseProto.Command;
 
@@ -35,7 +36,11 @@ public class RevisionConsumer {
             @Header(KafkaHeaders.OFFSET) int offset,
             Acknowledgment acknowledgment) {
         log.info("received {} from partition {}, offset = {}", command, partition, offset);
-        docService.apply(command.getDocId(), Collections.singletonList(command));
+        try {
+            docService.apply(command.getDocId(), Collections.singletonList(command));
+        } catch (CommandException e) {
+            throw new RuntimeException(e);
+        }
 
         // manually send ack after execution to avoid lost message.
         acknowledgment.acknowledge();

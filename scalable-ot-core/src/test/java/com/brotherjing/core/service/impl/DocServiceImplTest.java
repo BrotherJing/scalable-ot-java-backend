@@ -20,6 +20,7 @@ import com.brotherjing.config.MongoConfig;
 import com.brotherjing.core.dto.SnapshotDto;
 import com.brotherjing.core.executor.CommandExecutorRegistry;
 import com.brotherjing.core.executor.impl.TextCommandExecutor;
+import com.brotherjing.core.model.exception.CommandException;
 import com.brotherjing.proto.BaseProto;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -52,7 +53,7 @@ public class DocServiceImplTest {
     }
 
     @Test
-    public void testTakeSnapshot() {
+    public void testTakeSnapshot() throws CommandException {
         BaseProto.Snapshot doc = docService.create(BaseProto.DocType.PLAIN_TEXT);
         String docId = doc.getDocId();
         int toVersion = Const.TAKE_SNAPSHOT_INTERVAL + 1;

@@ -118,12 +118,16 @@ public class DocServiceImpl implements DocService {
             return Converter.toSnapshotProto(snapshot);
         }
         List<BaseProto.Command> ops = getOpsBetween(docId, snapshot.getVersion(), version);
-        apply(snapshot, ops);
+        try {
+            apply(snapshot, ops);
+        } catch (CommandException e) {
+            e.printStackTrace();
+        }
         return Converter.toSnapshotProto(snapshot);
     }
 
     @Override
-    public BaseProto.Snapshot apply(String docId, List<BaseProto.Command> commands) {
+    public BaseProto.Snapshot apply(String docId, List<BaseProto.Command> commands) throws CommandException {
         SnapshotDto dto = docDao.findById(IDUtils.generateSnapshotPK(docId)).orElse(null);
         if (dto == null) {
             return null;
@@ -137,7 +141,7 @@ public class DocServiceImpl implements DocService {
         return Converter.toSnapshotProto(dto);
     }
 
-    private void apply(SnapshotDto dto, List<BaseProto.Command> commands) {
+    private void apply(SnapshotDto dto, List<BaseProto.Command> commands) throws CommandException {
         if (commands == null || commands.isEmpty()) {
             return;
         }
@@ -151,12 +155,8 @@ public class DocServiceImpl implements DocService {
         commands = commands.stream()
                            .filter(command -> command.getVersion() >= version)
                            .collect(Collectors.toList());
-        try {
-            executor.apply(dto, commands);
-            dto.setVersion(version + commands.size());
-        } catch (CommandException e) {
-            e.printStackTrace();
-        }
+        executor.apply(dto, commands);
+        dto.setVersion(version + commands.size());
     }
 
     /**
