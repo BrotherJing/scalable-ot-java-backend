@@ -15,11 +15,12 @@ import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
+import com.brotherjing.broadcast.Broadcast;
 import com.brotherjing.proto.BaseProto;
 
 @Slf4j
 @Component
-public class WebSocketHandler extends BinaryWebSocketHandler {
+public class WebSocketHandler extends BinaryWebSocketHandler implements Broadcast {
 
     private Map<String, Map<String, WebSocketSession>> clientsByDocId = new ConcurrentHashMap<>();
 
@@ -33,6 +34,7 @@ public class WebSocketHandler extends BinaryWebSocketHandler {
         }
     }
 
+    @Override
     public void sendToAll(List<BaseProto.Command> commands, boolean excludeSelf) {
         if (CollectionUtils.isEmpty(commands)) {
             return;
@@ -65,10 +67,7 @@ public class WebSocketHandler extends BinaryWebSocketHandler {
         }
     }
 
-    public void sendToAll(BaseProto.Command command, boolean excludeSelf) {
-        sendToAll(Collections.singletonList(command), excludeSelf);
-    }
-
+    @Override
     public void sendTo(String sid, List<BaseProto.Command> commands) {
         if (CollectionUtils.isEmpty(commands)) {
             return;

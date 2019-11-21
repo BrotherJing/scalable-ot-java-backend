@@ -5,7 +5,7 @@ import net.devh.boot.grpc.server.service.GrpcService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.brotherjing.broadcast.handler.WebSocketHandler;
+import com.brotherjing.broadcast.Broadcast;
 import com.brotherjing.proto.BaseProto;
 import com.brotherjing.proto.BroadcastServiceGrpc;
 
@@ -13,7 +13,7 @@ import com.brotherjing.proto.BroadcastServiceGrpc;
 public class BroadcastServiceImpl extends BroadcastServiceGrpc.BroadcastServiceImplBase {
 
     @Autowired
-    private WebSocketHandler broadcast;
+    private Broadcast broadcast;
 
     @Override
     public void sendTo(BaseProto.SendRequest request, StreamObserver<BaseProto.BroadcastResponse> responseObserver) {
