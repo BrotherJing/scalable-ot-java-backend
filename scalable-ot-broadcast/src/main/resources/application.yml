@@ -1,0 +1,10 @@
+server:
+  port: 8083
+dubbo:
+  application:
+    name: broadcast
+  registry:
+    address: zookeeper://localhost:2181
+  protocol:
+    name: dubbo
+    port: 20880

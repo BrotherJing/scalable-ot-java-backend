@@ -18,10 +18,6 @@
     </dependency>
     <dependency>
       <groupId>com.brotherjing</groupId>
-      <artifactId>scalable-ot-broadcast</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.brotherjing</groupId>
       <artifactId>scalable-ot-core</artifactId>
     </dependency>
     <dependency>

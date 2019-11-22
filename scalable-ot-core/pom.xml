@@ -64,6 +64,18 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
     </dependency>
+    <dependency>
+      <artifactId>curator-framework</artifactId>
+      <groupId>org.apache.curator</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>curator-recipes</artifactId>
+      <groupId>org.apache.curator</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>dubbo</artifactId>
+      <groupId>org.apache.dubbo</groupId>
+    </dependency>
   </dependencies>
 
   <build>

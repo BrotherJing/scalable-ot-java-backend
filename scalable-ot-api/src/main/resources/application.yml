@@ -6,3 +6,10 @@ spring:
       bootstrap-servers: localhost:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: com.brotherjing.serialize.ProtoSerializer
+dubbo:
+  application:
+    name: api
+  registry:
+    address: zookeeper://localhost:2181
+  consumer:
+    timeout: 3000

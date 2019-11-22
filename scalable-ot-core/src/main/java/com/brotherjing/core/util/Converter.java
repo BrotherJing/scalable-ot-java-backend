@@ -23,4 +23,13 @@ public class Converter {
         }
         return null;
     }
+
+    public static BaseProto.Command parseSafe(byte[] payload) {
+        try {
+            return BaseProto.Command.parseFrom(payload);
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
