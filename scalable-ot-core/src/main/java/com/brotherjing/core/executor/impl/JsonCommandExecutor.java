@@ -57,6 +57,9 @@ public class JsonCommandExecutor extends AbstractCommandExecutor<JsonProto.Opera
                     pointer = pointer.get(path.getKey());
                 }
             }
+            if (pointer == null) {
+                continue;
+            }
             // operate on the leaf node
             JsonProto.Path lastPath = pathList.get(pathList.size() - 1);
             if (lastPath.getTypeCase().equals(JsonProto.Path.TypeCase.INDEX)) {
