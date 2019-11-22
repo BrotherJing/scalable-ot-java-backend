@@ -8,3 +8,9 @@ dubbo:
   protocol:
     name: dubbo
     port: 20880
+zookeeper:
+  connect-string: localhost:2181
+  connection-timeout-ms: 150000
+  session-timeout-ms: 600000
+  base-sleep-time-ms: 30000
+  max-retries: 5
