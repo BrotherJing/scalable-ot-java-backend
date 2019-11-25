@@ -1,8 +1,5 @@
 package com.brotherjing.broadcast.service;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +16,9 @@ public class RegistryService {
     @Value(value = "${server.port}")
     private String serverPort;
 
+    @Value(value = "${dubbo.protocol.port}")
+    private String dubboPort;
+
     @Autowired
     private ZookeeperConfig zookeeperConfig;
 
@@ -32,14 +32,7 @@ public class RegistryService {
     }
 
     private void register() {
-        InetAddress inetAddress;
-        try {
-            inetAddress = InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException("Failed to get local address", e);
-        }
-        String address = inetAddress.getHostAddress();
-        boolean success = registry.register(Const.BROADCAST_REGISTRY_PATH, address + serverPort);
+        boolean success = registry.register(Const.BROADCAST_REGISTRY_PATH, serverPort, dubboPort);
         if (!success) {
             throw new RuntimeException("Failed to register");
         }

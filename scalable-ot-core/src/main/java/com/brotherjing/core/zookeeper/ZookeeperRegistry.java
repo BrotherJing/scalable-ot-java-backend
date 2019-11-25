@@ -1,5 +1,7 @@
 package com.brotherjing.core.zookeeper;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiConsumer;
 
@@ -70,13 +72,28 @@ public class ZookeeperRegistry {
         return true;
     }
 
-    public boolean register(String root, String ipAddress) {
-        String path = root + "/" + ipAddress;
+    /**
+     * Register a server as a z-node. Need to record both its exposed port
+     * for interacting with client, and dubbo port for rpc invocation.
+     * <p>
+     * Dubbo port is put in path, while server port is put in node data.
+     * For example /root/127.0.0.1:20880 with data 127.0.0.1:8080
+     */
+    public boolean register(String root, String serverPort, String dubboPort) {
+        InetAddress inetAddress;
+        try {
+            inetAddress = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException("Failed to get local address", e);
+        }
+        String address = inetAddress.getHostAddress();
+        String path = root + "/" + address + ":" + dubboPort;
+        String serverAddress = address + ":" + serverPort;
         try {
             curator.create()
                    .creatingParentsIfNeeded()
                    .withMode(CreateMode.EPHEMERAL)
-                   .forPath(path);
+                   .forPath(path, serverAddress.getBytes());
             log.info("Registered path in zookeeper: {}", path);
         } catch (Exception e) {
             log.error("Failed to register path {}, {}", path, e);
