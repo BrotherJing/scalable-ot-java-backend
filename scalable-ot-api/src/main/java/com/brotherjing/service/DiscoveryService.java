@@ -4,25 +4,30 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.brotherjing.Const;
 import com.brotherjing.config.ZookeeperConfig;
+import com.brotherjing.core.loadbalance.ServerEntity;
 import com.brotherjing.core.zookeeper.ZookeeperRegistry;
 
 @Slf4j
+@Service
 public class DiscoveryService {
 
     @Autowired
     private ZookeeperConfig zookeeperConfig;
 
-    private Set<InetSocketAddress> cache;
+    private Set<ServerEntity> cache = ConcurrentHashMap.newKeySet();
 
     @PostConstruct
     public void init() {
@@ -43,20 +48,31 @@ public class DiscoveryService {
         });
     }
 
-    public List<InetSocketAddress> getAllServers() {
+    public List<ServerEntity> getAllServers() {
         return new ArrayList<>(cache);
     }
 
     private void addServer(PathChildrenCacheEvent event) {
-        String path = event.getData().getPath();
-        cache.add(toSocketAddress(path));
-        log.info("New server: {}", path);
+        ServerEntity entity = toServerEntity(event.getData());
+        cache.add(entity);
+        log.info("New server: {}", entity);
     }
 
     private void removeServer(PathChildrenCacheEvent event) {
-        String path = event.getData().getPath();
-        cache.remove(toSocketAddress(path));
-        log.info("Remove server: {}", path);
+        ServerEntity entity = toServerEntity(event.getData());
+        cache.remove(entity);
+        log.info("Remove server: {}", entity);
+    }
+
+    private ServerEntity toServerEntity(ChildData data) {
+        String path = data.getPath();
+        InetSocketAddress dubboAddress = toSocketAddress(path);
+        InetSocketAddress serverAddress = toSocketAddress(new String(data.getData()));
+        return ServerEntity.builder()
+                           .host(dubboAddress.getHostString())
+                           .dubboPort(dubboAddress.getPort())
+                           .serverPort(serverAddress.getPort())
+                           .build();
     }
 
     private InetSocketAddress toSocketAddress(String path) {
