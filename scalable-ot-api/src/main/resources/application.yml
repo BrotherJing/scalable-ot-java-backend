@@ -13,6 +13,7 @@ dubbo:
     address: zookeeper://localhost:2181
   consumer:
     timeout: 3000
+    check: false
 zookeeper:
   connect-string: localhost:2181
   connection-timeout-ms: 150000
