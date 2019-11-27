@@ -1,7 +1,5 @@
 package com.brotherjing.core.zookeeper;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.BiConsumer;
 
@@ -15,7 +13,9 @@ import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.data.Stat;
 
+import com.brotherjing.Const;
 import com.brotherjing.config.ZookeeperConfig;
+import com.brotherjing.core.loadbalance.ServerEntity;
 
 @Slf4j
 public class ZookeeperRegistry {
@@ -79,21 +79,14 @@ public class ZookeeperRegistry {
      * Dubbo port is put in path, while server port is put in node data.
      * For example /root/127.0.0.1:20880 with data 127.0.0.1:8080
      */
-    public boolean register(String root, String serverPort, String dubboPort) {
-        InetAddress inetAddress;
-        try {
-            inetAddress = InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException("Failed to get local address", e);
-        }
-        String address = inetAddress.getHostAddress();
-        String path = root + "/" + address + ":" + dubboPort;
-        String serverAddress = address + ":" + serverPort;
+    public boolean register(ServerEntity serverEntity) {
+        String path = Const.BROADCAST_REGISTRY_PATH + "/" + serverEntity.getDubboAddress();
+        String data = serverEntity.getServerAddress();
         try {
             curator.create()
                    .creatingParentsIfNeeded()
                    .withMode(CreateMode.EPHEMERAL)
-                   .forPath(path, serverAddress.getBytes());
+                   .forPath(path, data.getBytes());
             log.info("Registered path in zookeeper: {}", path);
         } catch (Exception e) {
             log.error("Failed to register path {}, {}", path, e);

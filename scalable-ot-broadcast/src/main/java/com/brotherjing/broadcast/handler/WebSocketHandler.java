@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 import org.apache.dubbo.config.annotation.Service;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.socket.BinaryMessage;
@@ -19,6 +20,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
 import com.brotherjing.api.Broadcast;
+import com.brotherjing.broadcast.service.RegistryService;
 import com.brotherjing.core.util.Converter;
 import com.brotherjing.proto.BaseProto;
 
@@ -26,6 +28,9 @@ import com.brotherjing.proto.BaseProto;
 @Component
 @Service(interfaceClass = Broadcast.class)
 public class WebSocketHandler extends BinaryWebSocketHandler implements Broadcast {
+
+    @Autowired
+    private RegistryService registryService;
 
     private Map<String, Map<String, WebSocketSession>> clientsByDocId = new ConcurrentHashMap<>();
 
@@ -104,5 +109,8 @@ public class WebSocketHandler extends BinaryWebSocketHandler implements Broadcas
     private void register(String docId, String sid, WebSocketSession client) {
         clientsByDocId.putIfAbsent(docId, new ConcurrentHashMap<>());
         clientsByDocId.get(docId).put(sid, client);
+
+        // also register the route in redis
+        registryService.registerRoute(docId);
     }
 }
