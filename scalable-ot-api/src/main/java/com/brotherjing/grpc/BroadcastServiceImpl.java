@@ -12,11 +12,10 @@ import org.springframework.util.CollectionUtils;
 
 import com.brotherjing.Const;
 import com.brotherjing.api.Broadcast;
-import com.brotherjing.core.loadbalance.LoadBalancer;
 import com.brotherjing.core.loadbalance.ServerEntity;
 import com.brotherjing.proto.BaseProto;
 import com.brotherjing.proto.BroadcastServiceGrpc;
-import com.brotherjing.service.DiscoveryService;
+import com.brotherjing.service.RouteService;
 import com.google.protobuf.AbstractMessageLite;
 
 @GrpcService
@@ -26,10 +25,7 @@ public class BroadcastServiceImpl extends BroadcastServiceGrpc.BroadcastServiceI
     private Broadcast broadcast;
 
     @Autowired
-    private DiscoveryService discoveryService;
-
-    @Autowired
-    private LoadBalancer loadBalancer;
+    private RouteService routeService;
 
     @Override
     public void sendTo(BaseProto.SendRequest request, StreamObserver<BaseProto.BroadcastResponse> responseObserver) {
@@ -60,7 +56,7 @@ public class BroadcastServiceImpl extends BroadcastServiceGrpc.BroadcastServiceI
      * Get broadcast server ip by docId, and put in RPC context.
      */
     private void setBroadcastIP(String docId) {
-        ServerEntity entity = loadBalancer.select(discoveryService.getAllServers(), docId);
+        ServerEntity entity = routeService.getRoute(docId);
         RpcContext.getContext().set(Const.BROADCAST_ADDR_CONTEXT, entity);
     }
 }

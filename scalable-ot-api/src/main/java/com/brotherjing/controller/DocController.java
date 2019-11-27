@@ -15,12 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.brotherjing.core.loadbalance.LoadBalancer;
 import com.brotherjing.core.loadbalance.ServerEntity;
 import com.brotherjing.core.service.DocService;
 import com.brotherjing.producer.OpSender;
 import com.brotherjing.proto.BaseProto;
-import com.brotherjing.service.DiscoveryService;
+import com.brotherjing.service.RouteService;
 
 @Slf4j
 @RestController
@@ -34,10 +33,7 @@ public class DocController {
     private OpSender opSender;
 
     @Autowired
-    private DiscoveryService discoveryService;
-
-    @Autowired
-    private LoadBalancer loadBalancer;
+    private RouteService routeService;
 
     @RequestMapping(value = "/create", method = RequestMethod.POST)
     @ResponseBody
@@ -85,8 +81,7 @@ public class DocController {
      */
     @GetMapping(value = "/{docId}/channel")
     String getChannel(@PathVariable String docId) {
-        List<ServerEntity> allServers = discoveryService.getAllServers();
-        ServerEntity entity = loadBalancer.select(allServers, docId);
+        ServerEntity entity = routeService.getRoute(docId);
         log.info("Select channel {} for docId {}", entity.toString(), docId);
         return entity.getServerAddress();
     }
