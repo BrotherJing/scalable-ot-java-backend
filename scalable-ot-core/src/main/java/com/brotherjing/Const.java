@@ -10,6 +10,12 @@ public interface Const {
     String REVISION_CONSUMER_GROUP_ID = "revision_consumer";
 
     /**
+     * Redis
+     */
+    String ROUTE_PREFIX = "route:";
+    int ROUTE_EXPIRE_MINUTES = 30;
+
+    /**
      * Zookeeper
      */
     String BROADCAST_REGISTRY_PATH = "/ot-broadcast";
